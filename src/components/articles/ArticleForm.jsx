@@ -126,9 +126,10 @@ export default function ArticleForm({
       }
     >
 
-      <div className="bg-white rounded-3xl p-2">
+      <div className="bg-white rounded-3xl p-6 w-full max-w-3xl">
 
-        <div className="mb-6">
+        {/* Header */}
+        <div className="mb-8">
 
           <h2 className="text-3xl font-bold text-[#111111]">
             Create Article
@@ -141,8 +142,10 @@ export default function ArticleForm({
 
         </div>
 
+        {/* Form */}
         <div className="space-y-5">
 
+          {/* Title */}
           <div>
 
             <label className="block mb-2 text-sm font-semibold text-gray-700">
@@ -168,11 +171,12 @@ export default function ArticleForm({
                 focus:ring-4
                 focus:ring-red-100
                 focus:border-red-400
-                transition-all
               "
             />
+
           </div>
 
+          {/* Slug */}
           <div>
 
             <label className="block mb-2 text-sm font-semibold text-gray-700">
@@ -198,11 +202,12 @@ export default function ArticleForm({
                 focus:ring-4
                 focus:ring-red-100
                 focus:border-red-400
-                transition-all
               "
             />
+
           </div>
 
+          {/* Domain */}
           <div>
 
             <label className="block mb-2 text-sm font-semibold text-gray-700">
@@ -230,11 +235,12 @@ export default function ArticleForm({
                 focus:ring-4
                 focus:ring-red-100
                 focus:border-red-400
-                transition-all
               "
             />
+
           </div>
 
+          {/* Tags */}
           <div>
 
             <label className="block mb-2 text-sm font-semibold text-gray-700">
@@ -260,11 +266,12 @@ export default function ArticleForm({
                 focus:ring-4
                 focus:ring-red-100
                 focus:border-red-400
-                transition-all
               "
             />
+
           </div>
 
+          {/* Description */}
           <div>
 
             <label className="block mb-2 text-sm font-semibold text-gray-700">
@@ -289,16 +296,17 @@ export default function ArticleForm({
                 py-4
                 rounded-2xl
                 outline-none
+                h-32
+                resize-none
                 focus:ring-4
                 focus:ring-red-100
                 focus:border-red-400
-                transition-all
-                h-32
-                resize-none
               "
             />
+
           </div>
 
+          {/* Content */}
           <div>
 
             <label className="block mb-2 text-sm font-semibold text-gray-700">
@@ -321,16 +329,17 @@ export default function ArticleForm({
                 py-4
                 rounded-2xl
                 outline-none
+                h-48
+                resize-none
                 focus:ring-4
                 focus:ring-red-100
                 focus:border-red-400
-                transition-all
-                h-48
-                resize-none
               "
             />
+
           </div>
 
+          {/* Status */}
           <div>
 
             <label className="block mb-2 text-sm font-semibold text-gray-700">
@@ -355,9 +364,9 @@ export default function ArticleForm({
                 focus:ring-4
                 focus:ring-red-100
                 focus:border-red-400
-                transition-all
               "
             >
+
               <option value="published">
                 Published
               </option>
@@ -370,6 +379,7 @@ export default function ArticleForm({
 
           </div>
 
+          {/* Trending */}
           <div className="flex items-center gap-3">
 
             <input
@@ -390,10 +400,10 @@ export default function ArticleForm({
 
           </div>
 
+          {/* Submit Button */}
           <button
-            onClick={
-              handleSubmit
-            }
+            type="button"
+            onClick={handleSubmit}
             disabled={loading}
             className="
               w-full
@@ -409,16 +419,21 @@ export default function ArticleForm({
               shadow-lg
               hover:shadow-red-200
               disabled:opacity-70
+              mt-4
             "
           >
+
             {loading
               ? "Creating..."
               : "Create Article"}
+
           </button>
 
         </div>
+
       </div>
 
     </Modal>
   );
 }
+
