@@ -14,7 +14,7 @@ export const articleApi = {
     
 
   create: (token, body) =>
-    apiFetch("/api/v1/articles/", token, {
+    apiFetch("/api/v1/article/", token, {
       method: "POST",
       body: JSON.stringify(body),
     }),
