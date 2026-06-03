@@ -27,7 +27,7 @@ export default function Sidebar({
       className="
         w-72
         h-screen
-        bg-[#FAFAF8]
+        bg-[#FF0000]
         border-r
         border-[#EAEAEA]
         flex
