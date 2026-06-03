@@ -85,7 +85,7 @@ export default function Sidebar({
                   ${
                     page === item.id
                       ? `
-                        bg-[#FF0000]
+                        bg-[#FF6347]
                         text-white
                         shadow-lg
                         shadow-red-100
