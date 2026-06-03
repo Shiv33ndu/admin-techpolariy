@@ -163,14 +163,14 @@ export default function ArticleForm({
             <label className="block mb-2 text-sm font-semibold text-gray-700">
               Slug
             </label>
-
-            <input
-              name="slug"
-              value={form.slug}
-              onChange={handleChange}
-              placeholder="article-slug"
-              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
-            />
+<input
+  name="slug"
+  value={form.slug}
+  onChange={handleChange}
+  disabled={!!article}
+  placeholder="article-slug"
+  className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl disabled:bg-gray-100 disabled:text-gray-500"
+/>
           </div>
 
           <div>

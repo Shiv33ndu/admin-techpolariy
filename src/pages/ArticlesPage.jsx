@@ -9,7 +9,8 @@ import ArticleForm from "../components/articles/ArticleForm";
 export default function ArticlesPage({ token }) {
   const [page] = useState(1);
   const [open, setOpen] = useState(false);
-  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [selectedArticle, setSelectedArticle] =
+    useState(null);
 
   const {
     articles,
@@ -35,15 +36,22 @@ export default function ArticlesPage({ token }) {
     if (!confirmed) return;
 
     try {
-      await articleApi.delete(token, slug);
+      await articleApi.delete(
+        token,
+        slug
+      );
 
-      alert("Article deleted successfully");
+      alert(
+        "Article deleted successfully"
+      );
 
-      refetch();
+      await refetch();
     } catch (error) {
       console.error(error);
 
-      alert("Failed to delete article");
+      alert(
+        "Failed to delete article"
+      );
     }
   };
 
@@ -54,14 +62,24 @@ export default function ArticlesPage({ token }) {
 
         <button
           onClick={handleCreate}
-          className="bg-blue-600 text-white px-5 py-3 rounded-xl"
+          className="
+            bg-blue-600
+            hover:bg-blue-700
+            text-white
+            px-5
+            py-3
+            rounded-xl
+            transition
+          "
         >
           + New Article
         </button>
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <div className="bg-white rounded-xl p-6">
+          Loading articles...
+        </div>
       ) : (
         <ArticleTable
           articles={articles}
