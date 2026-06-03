@@ -21,10 +21,10 @@ const useArticles = (token, page, filters) => {
 console.log("API Response:", data);
 
       setArticles(
-        Array.isArray(data)
-          ? data
-          : data?.articles || []
-      );
+  Array.isArray(data)
+    ? data
+    : data?.items || []
+);
     } catch (err) {
       console.log(err);
     } finally {
