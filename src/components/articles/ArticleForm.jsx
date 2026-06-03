@@ -1,7 +1,5 @@
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 import Modal from "../ui/Modal";
-
 import { articleApi } from "../../api/articles.api";
 
 export default function ArticleForm({
@@ -9,8 +7,8 @@ export default function ArticleForm({
   setOpen,
   token,
   refetch,
+  article,
 }) {
-
   const initialForm = {
     title: "",
     slug: "",
@@ -23,14 +21,31 @@ export default function ArticleForm({
     image: {},
   };
 
-  const [form, setForm] =
-    useState(initialForm);
+  const [form, setForm] = useState(initialForm);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (article) {
+      setForm({
+        title: article.title || "",
+        slug: article.slug || "",
+        description: article.description || "",
+        content: article.content || "",
+        domain_slug: article.domain_slug || "",
+        status: article.status || "published",
+        tags: Array.isArray(article.tags)
+          ? article.tags.join(", ")
+          : "",
+        is_trending: article.is_trending || false,
+        image: article.image || {},
+      });
+    } else {
+      setForm(initialForm);
+    }
+  }, [article, open]);
 
   const handleChange = (e) => {
-
     const {
       name,
       value,
@@ -38,56 +53,45 @@ export default function ArticleForm({
       checked,
     } = e.target;
 
-    setForm({
-      ...form,
-
+    setForm((prev) => ({
+      ...prev,
       [name]:
         type === "checkbox"
           ? checked
           : value,
-    });
+    }));
   };
 
-  const handleSubmit =
-    async () => {
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
 
-      try {
+      const payload = {
+        title: form.title,
+        slug: form.slug,
+        description: form.description,
+        content: form.content,
+        domain_slug: form.domain_slug,
+        status: form.status,
+        tags: form.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+        is_trending: form.is_trending,
+        image: {},
+      };
 
-        setLoading(true);
-
-        const payload = {
-          title: form.title,
-
-          slug: form.slug,
-
-          description:
-            form.description,
-
-          content: form.content,
-
-          domain_slug:
-            form.domain_slug,
-
-          status: form.status,
-
-          tags: form.tags
-            .split(",")
-            .map((tag) =>
-              tag.trim()
-            )
-            .filter(Boolean),
-
-          is_trending:
-            form.is_trending,
-
-          image: {},
-        };
-
-        console.log(
-          "Payload:",
+      if (article) {
+        await articleApi.update(
+          token,
+          article.slug,
           payload
         );
 
+        alert(
+          "Article Updated Successfully"
+        );
+      } else {
         await articleApi.create(
           token,
           payload
@@ -96,27 +100,25 @@ export default function ArticleForm({
         alert(
           "Article Created Successfully"
         );
-
-        refetch();
-
-        setOpen(false);
-
-        setForm(initialForm);
-
-      } catch (err) {
-
-        console.log(err);
-
-        alert(
-          err.message ||
-            "Failed to create article"
-        );
-
-      } finally {
-
-        setLoading(false);
       }
-    };
+
+      await refetch();
+
+      setOpen(false);
+
+      setForm(initialForm);
+
+    } catch (err) {
+      console.error(err);
+
+      alert(
+        err.message ||
+          "Failed to save article"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Modal
@@ -125,223 +127,109 @@ export default function ArticleForm({
         setOpen(false)
       }
     >
+      <div className="bg-white rounded-3xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
 
-      <div className="bg-white rounded-3xl p-6 w-full max-w-3xl">
-
-        {/* Header */}
         <div className="mb-8">
-
           <h2 className="text-3xl font-bold text-[#111111]">
-            Create Article
+            {article
+              ? "Edit Article"
+              : "Create Article"}
           </h2>
 
           <p className="text-gray-500 mt-2">
-            Publish a new article
-            to TechPolarity
+            {article
+              ? "Update article details"
+              : "Publish a new article to TechPolarity"}
           </p>
-
         </div>
 
-        {/* Form */}
         <div className="space-y-5">
 
-          {/* Title */}
           <div>
-
             <label className="block mb-2 text-sm font-semibold text-gray-700">
               Title
             </label>
 
             <input
               name="title"
-              placeholder="Enter article title"
               value={form.title}
-              onChange={
-                handleChange
-              }
-              className="
-                w-full
-                border
-                border-gray-300
-                bg-[#fafafa]
-                px-5
-                py-4
-                rounded-2xl
-                outline-none
-                focus:ring-4
-                focus:ring-red-100
-                focus:border-red-400
-              "
+              onChange={handleChange}
+              placeholder="Enter article title"
+              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
             />
-
           </div>
 
-          {/* Slug */}
           <div>
-
             <label className="block mb-2 text-sm font-semibold text-gray-700">
               Slug
             </label>
 
             <input
               name="slug"
-              placeholder="article-slug"
               value={form.slug}
-              onChange={
-                handleChange
-              }
-              className="
-                w-full
-                border
-                border-gray-300
-                bg-[#fafafa]
-                px-5
-                py-4
-                rounded-2xl
-                outline-none
-                focus:ring-4
-                focus:ring-red-100
-                focus:border-red-400
-              "
+              onChange={handleChange}
+              placeholder="article-slug"
+              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
             />
-
           </div>
 
-          {/* Domain */}
           <div>
-
             <label className="block mb-2 text-sm font-semibold text-gray-700">
               Domain
             </label>
 
             <input
               name="domain_slug"
+              value={form.domain_slug}
+              onChange={handleChange}
               placeholder="technology"
-              value={
-                form.domain_slug
-              }
-              onChange={
-                handleChange
-              }
-              className="
-                w-full
-                border
-                border-gray-300
-                bg-[#fafafa]
-                px-5
-                py-4
-                rounded-2xl
-                outline-none
-                focus:ring-4
-                focus:ring-red-100
-                focus:border-red-400
-              "
+              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
             />
-
           </div>
 
-          {/* Tags */}
           <div>
-
             <label className="block mb-2 text-sm font-semibold text-gray-700">
               Tags
             </label>
 
             <input
               name="tags"
-              placeholder="react, ai, javascript"
               value={form.tags}
-              onChange={
-                handleChange
-              }
-              className="
-                w-full
-                border
-                border-gray-300
-                bg-[#fafafa]
-                px-5
-                py-4
-                rounded-2xl
-                outline-none
-                focus:ring-4
-                focus:ring-red-100
-                focus:border-red-400
-              "
+              onChange={handleChange}
+              placeholder="react, ai, javascript"
+              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
             />
-
           </div>
 
-          {/* Description */}
           <div>
-
             <label className="block mb-2 text-sm font-semibold text-gray-700">
               Description
             </label>
 
             <textarea
               name="description"
+              value={form.description}
+              onChange={handleChange}
               placeholder="Short article description"
-              value={
-                form.description
-              }
-              onChange={
-                handleChange
-              }
-              className="
-                w-full
-                border
-                border-gray-300
-                bg-[#fafafa]
-                px-5
-                py-4
-                rounded-2xl
-                outline-none
-                h-32
-                resize-none
-                focus:ring-4
-                focus:ring-red-100
-                focus:border-red-400
-              "
+              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl h-32"
             />
-
           </div>
 
-          {/* Content */}
           <div>
-
             <label className="block mb-2 text-sm font-semibold text-gray-700">
               Content
             </label>
 
             <textarea
               name="content"
-              placeholder="Write full article content..."
               value={form.content}
-              onChange={
-                handleChange
-              }
-              className="
-                w-full
-                border
-                border-gray-300
-                bg-[#fafafa]
-                px-5
-                py-4
-                rounded-2xl
-                outline-none
-                h-48
-                resize-none
-                focus:ring-4
-                focus:ring-red-100
-                focus:border-red-400
-              "
+              onChange={handleChange}
+              placeholder="Write full article content..."
+              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl h-48"
             />
-
           </div>
 
-          {/* Status */}
           <div>
-
             <label className="block mb-2 text-sm font-semibold text-gray-700">
               Status
             </label>
@@ -349,24 +237,9 @@ export default function ArticleForm({
             <select
               name="status"
               value={form.status}
-              onChange={
-                handleChange
-              }
-              className="
-                w-full
-                border
-                border-gray-300
-                bg-[#fafafa]
-                px-5
-                py-4
-                rounded-2xl
-                outline-none
-                focus:ring-4
-                focus:ring-red-100
-                focus:border-red-400
-              "
+              onChange={handleChange}
+              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
             >
-
               <option value="published">
                 Published
               </option>
@@ -375,65 +248,42 @@ export default function ArticleForm({
                 Draft
               </option>
 
+              <option value="deleted">
+                Deleted
+              </option>
             </select>
-
           </div>
 
-          {/* Trending */}
           <div className="flex items-center gap-3">
-
             <input
               type="checkbox"
               name="is_trending"
-              checked={
-                form.is_trending
-              }
-              onChange={
-                handleChange
-              }
-              className="w-5 h-5 accent-red-500"
+              checked={form.is_trending}
+              onChange={handleChange}
+              className="w-5 h-5"
             />
 
-            <label className="text-sm font-medium text-gray-700">
+            <label>
               Mark as Trending
             </label>
-
           </div>
 
-          {/* Submit Button */}
           <button
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className="
-              w-full
-              bg-[#ff6347]
-              hover:bg-[#ef553a]
-              text-white
-              py-4
-              rounded-2xl
-              font-semibold
-              text-lg
-              transition-all
-              duration-300
-              shadow-lg
-              hover:shadow-red-200
-              disabled:opacity-70
-              mt-4
-            "
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-semibold"
           >
-
             {loading
-              ? "Creating..."
+              ? article
+                ? "Updating..."
+                : "Creating..."
+              : article
+              ? "Update Article"
               : "Create Article"}
-
           </button>
-
         </div>
-
       </div>
-
     </Modal>
   );
 }
-
