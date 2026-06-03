@@ -27,24 +27,23 @@ export default function Sidebar({
       className="
         w-72
         h-screen
-        bg-[#FF0000]
+        bg-white
         border-r
-        border-[#EAEAEA]
+        border-gray-200
         flex
         flex-col
         justify-between
-        shadow-sm
+        shadow-lg
       "
     >
-      {/* Top Section */}
+      {/* Logo Section */}
       <div>
-        {/* Logo */}
-        <div className="px-6 py-8 border-b border-[#EFEFEF]">
+        <div className="px-6 py-8 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <img
               src="/logo-techpolarity.png"
               alt="TechPolarity"
-              className="h-12 w-auto object-contain"
+              className="h-14 w-auto object-contain"
             />
 
             <div>
@@ -60,9 +59,12 @@ export default function Sidebar({
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-3">
           {items.map((item) => {
             const Icon = item.icon;
+
+            const active =
+              page === item.id;
 
             return (
               <button
@@ -75,25 +77,29 @@ export default function Sidebar({
                   flex
                   items-center
                   gap-3
-                  px-4
-                  py-3
+                  px-5
+                  py-4
                   rounded-2xl
+                  font-medium
+                  cursor-pointer
                   transition-all
                   duration-300
-                  font-medium
+                  transform
 
                   ${
-                    page === item.id
+                    active
                       ? `
-                        bg-[#FF6347]
+                        bg-[#FF0000]
                         text-white
                         shadow-lg
-                        shadow-red-100
+                        shadow-red-200
+                        scale-[1.02]
                       `
                       : `
-                        text-[#333333]
-                        hover:bg-white
-                        hover:shadow-sm
+                        text-[#222222]
+                        hover:bg-red-50
+                        hover:text-[#FF0000]
+                        hover:translate-x-1
                       `
                   }
                 `}
@@ -109,32 +115,47 @@ export default function Sidebar({
         </nav>
       </div>
 
-      {/* Bottom Section */}
-      <div className="p-4 border-t border-[#EFEFEF]">
+      {/* Footer */}
+      <div className="p-5 border-t border-gray-100">
+
         <button
           onClick={logout}
           className="
             w-full
             flex
             items-center
+            justify-center
             gap-3
-            px-4
-            py-3
+            py-4
             rounded-2xl
-            text-red-500
-            hover:bg-red-50
+            text-white
+            font-semibold
+            bg-gradient-to-r
+            from-[#FF0000]
+            to-[#D10000]
+            shadow-lg
+            shadow-red-200
             transition-all
             duration-300
+            hover:scale-105
+            hover:shadow-red-300
+            hover:-translate-y-1
+            active:scale-95
+            cursor-pointer
           "
         >
           <LogOut size={20} />
 
-          <span>Logout</span>
+          Logout
         </button>
 
-        <div className="mt-4 px-2">
+        <div className="mt-5 text-center">
           <p className="text-xs text-gray-400">
             TechPolarity CMS v1.0
+          </p>
+
+          <p className="text-[10px] text-gray-300 mt-1">
+            Powered by TechPolarity
           </p>
         </div>
       </div>
