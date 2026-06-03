@@ -17,6 +17,9 @@ const useArticles = (token, page, filters) => {
 
       const data = await articleApi.list(token, params);
 
+
+console.log("API Response:", data);
+
       setArticles(
         Array.isArray(data)
           ? data
