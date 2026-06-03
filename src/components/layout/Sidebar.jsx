@@ -1,11 +1,19 @@
+import {
+  LayoutDashboard,
+  FileText,
+  LogOut,
+} from "lucide-react";
+
 const items = [
   {
     id: "dashboard",
     label: "Dashboard",
+    icon: LayoutDashboard,
   },
   {
     id: "articles",
     label: "Articles",
+    icon: FileText,
   },
 ];
 
@@ -15,33 +23,121 @@ export default function Sidebar({
   logout,
 }) {
   return (
-    <aside className="w-60 bg-white border-r h-screen p-4">
-      <h1 className="text-2xl font-bold mb-6">
-        TechPolarity
-      </h1>
+    <aside
+      className="
+        w-72
+        h-screen
+        bg-[#FAFAF8]
+        border-r
+        border-[#EAEAEA]
+        flex
+        flex-col
+        justify-between
+        shadow-sm
+      "
+    >
+      {/* Top Section */}
+      <div>
+        {/* Logo */}
+        <div className="px-6 py-8 border-b border-[#EFEFEF]">
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo-techpolarity.png"
+              alt="TechPolarity"
+              className="h-12 w-auto object-contain"
+            />
 
-      <div className="space-y-2">
-        {items.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setPage(item.id)}
-            className={`w-full text-left p-3 rounded-lg ${
-              page === item.id
-                ? "bg-blue-100 text-blue-600"
-                : "hover:bg-gray-100"
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
+            <div>
+              <h1 className="text-xl font-bold text-[#111111]">
+                TechPolarity
+              </h1>
+
+              <p className="text-xs text-gray-500">
+                Admin Dashboard
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="p-4 space-y-2">
+          {items.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() =>
+                  setPage(item.id)
+                }
+                className={`
+                  w-full
+                  flex
+                  items-center
+                  gap-3
+                  px-4
+                  py-3
+                  rounded-2xl
+                  transition-all
+                  duration-300
+                  font-medium
+
+                  ${
+                    page === item.id
+                      ? `
+                        bg-[#FF6347]
+                        text-white
+                        shadow-lg
+                        shadow-red-100
+                      `
+                      : `
+                        text-[#333333]
+                        hover:bg-white
+                        hover:shadow-sm
+                      `
+                  }
+                `}
+              >
+                <Icon size={20} />
+
+                <span>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
-      <button
-        onClick={logout}
-        className="mt-10 text-red-500"
-      >
-        Logout
-      </button>
+      {/* Bottom Section */}
+      <div className="p-4 border-t border-[#EFEFEF]">
+        <button
+          onClick={logout}
+          className="
+            w-full
+            flex
+            items-center
+            gap-3
+            px-4
+            py-3
+            rounded-2xl
+            text-red-500
+            hover:bg-red-50
+            transition-all
+            duration-300
+          "
+        >
+          <LogOut size={20} />
+
+          <span>Logout</span>
+        </button>
+
+        <div className="mt-4 px-2">
+          <p className="text-xs text-gray-400">
+            TechPolarity CMS v1.0
+          </p>
+        </div>
+      </div>
     </aside>
   );
 }
