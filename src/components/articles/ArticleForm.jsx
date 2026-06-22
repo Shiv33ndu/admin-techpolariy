@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Modal from "../ui/Modal";
 import { articleApi } from "../../api/articles.api";
+import { categoryApi } from "../../api/categories.api";
 
 export default function ArticleForm({
   open,
@@ -24,6 +25,15 @@ export default function ArticleForm({
   const [form, setForm] = useState(initialForm);
 
   const [loading, setLoading] = useState(false);
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    categoryApi
+      .listActive(token)
+      .then(setCategories)
+      .catch((err) => console.error("Failed to load categories", err));
+  }, [token]);
 
   useEffect(() => {
     if (article) {
@@ -178,13 +188,22 @@ export default function ArticleForm({
               Domain
             </label>
 
-            <input
+            <select
               name="domain_slug"
               value={form.domain_slug}
               onChange={handleChange}
-              placeholder="technology"
               className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
-            />
+            >
+              <option value="" disabled>
+                Select a domain
+              </option>
+
+              {categories.map((category) => (
+                <option key={category.slug} value={category.slug}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
