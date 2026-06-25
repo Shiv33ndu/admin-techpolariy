@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, X, ImageIcon } from "lucide-react";
+import { Eye, EyeOff, X, ImageIcon, Upload, Loader2 } from "lucide-react";
 import { articleApi } from "../../api/articles.api";
 import { categoryApi } from "../../api/categories.api";
 import useAuthStore from "../../store/authStore";
 import useToastStore from "../../store/toastStore";
+import { uploadImageToCloudinary } from "../../lib/cloudinary";
 
 const initialForm = {
   title: "",
@@ -30,6 +31,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
   const [categories, setCategories] = useState([]);
   const [preview, setPreview] = useState(false);
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     categoryApi
@@ -74,6 +76,22 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
       }
       return updated;
     });
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const url = await uploadImageToCloudinary(file);
+      setForm((prev) => ({ ...prev, image_url: url }));
+    } catch (err) {
+      addToast(err.message || "Image upload failed", "error");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   const handleSubmit = async () => {
@@ -309,13 +327,33 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                   <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
                     Image URL *
                   </label>
-                  <input
-                    name="image_url"
-                    value={form.image_url}
-                    onChange={handleChange}
-                    placeholder="https://images.unsplash.com/..."
-                    className={inputClass}
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      name="image_url"
+                      value={form.image_url}
+                      onChange={handleChange}
+                      placeholder="https://images.unsplash.com/... or upload"
+                      className={inputClass}
+                    />
+                    <label
+                      className={`flex items-center justify-center w-11 shrink-0 rounded-xl border border-gray-200 bg-gray-50 cursor-pointer hover:border-[#FF0000] transition ${
+                        uploading ? "opacity-60 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      {uploading ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Upload size={16} />
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={uploading}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
                 </div>
                 <div>
                   <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
