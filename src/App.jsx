@@ -1,42 +1,45 @@
-import { useState } from "react";
-
+import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ArticlesPage from "./pages/ArticlesPage";
 import CategoriesPage from "./pages/CategoriesPage";
-
+import AdminLayout from "./components/layout/AdminLayout";
+import Toaster from "./components/ui/Toaster";
 import useAuthStore from "./store/authStore";
 
-import AdminLayout from "./components/layout/AdminLayout";
-
-function App() {
-  const token = useAuthStore((state) => state.token);
-  const logout = useAuthStore((state) => state.logout);
-
-  const [page, setPage] = useState("dashboard");
-
-  if (!token) {
-    return <LoginPage />;
-  }
-
-  const renderPage = () => {
-    switch (page) {
-      case "dashboard":
-        return <DashboardPage token={token} />;
-      case "articles":
-        return <ArticlesPage token={token} />;
-      case "categories":
-        return <CategoriesPage token={token} />;
-      default:
-        return <DashboardPage token={token} />;
-    }
-  };
-
-  return (
-    <AdminLayout page={page} setPage={setPage} logout={logout}>
-      {renderPage()}
-    </AdminLayout>
-  );
+function PrivateRoute({ children }) {
+  const token = useAuthStore((s) => s.token);
+  if (!token) return <Navigate to="/login" replace />;
+  return children;
 }
 
-export default App;
+export default function App() {
+  const token = useAuthStore((s) => s.token);
+
+  return (
+    <>
+      <Routes>
+        <Route
+          path="/login"
+          element={token ? <Navigate to="/" replace /> : <LoginPage />}
+        />
+        <Route
+          path="/*"
+          element={
+            <PrivateRoute>
+              <AdminLayout>
+                <Routes>
+                  <Route path="/" element={<DashboardPage />} />
+                  <Route path="/articles" element={<ArticlesPage />} />
+                  <Route path="/categories" element={<CategoriesPage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </AdminLayout>
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+      <Toaster />
+    </>
+  );
+}

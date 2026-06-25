@@ -1,21 +1,11 @@
 import Sidebar from "./Sidebar";
 
-export default function AdminLayout({
-  children,
-  page,
-  setPage,
-  logout,
-}) {
+export default function AdminLayout({ children }) {
   return (
-    <div className="flex">
-      <Sidebar
-        page={page}
-        setPage={setPage}
-        logout={logout}
-      />
-
-      <main className="flex-1 bg-gray-50 min-h-screen p-6">
-        {children}
+    <div className="flex min-h-screen bg-[#F4F4F5]">
+      <Sidebar />
+      <main className="flex-1 ml-64 min-h-screen">
+        <div className="max-w-7xl mx-auto p-8">{children}</div>
       </main>
     </div>
   );
