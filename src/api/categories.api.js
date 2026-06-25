@@ -4,6 +4,9 @@ export const categoryApi = {
   listActive: (token) =>
     apiFetch("/api/v1/navigation/main", token),
 
+  listAll: (token) =>
+    apiFetch("/api/v1/navigation/admin/all", token),
+
   create: (token, body) =>
     apiFetch("/api/v1/navigation/", token, {
       method: "POST",

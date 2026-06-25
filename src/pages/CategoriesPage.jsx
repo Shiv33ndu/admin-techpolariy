@@ -33,7 +33,7 @@ export default function CategoriesPage() {
   const load = async () => {
     try {
       setLoading(true);
-      const data = await categoryApi.listActive(token);
+      const data = await categoryApi.listAll(token);
       setCategories(Array.isArray(data) ? data : []);
     } catch {
       setCategories([]);
