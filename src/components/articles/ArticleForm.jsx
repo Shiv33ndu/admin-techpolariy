@@ -1,39 +1,41 @@
 import { useState, useEffect } from "react";
-import Modal from "../ui/Modal";
+import { Eye, EyeOff, X, ImageIcon } from "lucide-react";
 import { articleApi } from "../../api/articles.api";
 import { categoryApi } from "../../api/categories.api";
+import useAuthStore from "../../store/authStore";
+import useToastStore from "../../store/toastStore";
 
-export default function ArticleForm({
-  open,
-  setOpen,
-  token,
-  refetch,
-  article,
-}) {
-  const initialForm = {
-    title: "",
-    slug: "",
-    description: "",
-    content: "",
-    domain_slug: "",
-    status: "published",
-    tags: "",
-    is_trending: false,
-    image_url: "",
-    image_credit: "",
-  };
+const initialForm = {
+  title: "",
+  slug: "",
+  description: "",
+  content: "",
+  domain_slug: "",
+  status: "published",
+  tags: "",
+  is_trending: false,
+  image_url: "",
+  image_credit: "",
+};
+
+const inputClass =
+  "w-full border border-gray-200 bg-gray-50 px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-50 focus:border-[#FF0000] transition";
+
+export default function ArticleForm({ open, setOpen, refetch, article }) {
+  const token = useAuthStore((s) => s.token);
+  const { addToast } = useToastStore();
 
   const [form, setForm] = useState(initialForm);
-
   const [loading, setLoading] = useState(false);
-
   const [categories, setCategories] = useState([]);
+  const [preview, setPreview] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     categoryApi
       .listActive(token)
-      .then(setCategories)
-      .catch((err) => console.error("Failed to load categories", err));
+      .then((data) => setCategories(Array.isArray(data) ? data : []))
+      .catch(() => {});
   }, [token]);
 
   useEffect(() => {
@@ -45,9 +47,7 @@ export default function ArticleForm({
         content: article.content || "",
         domain_slug: article.domain_slug || "",
         status: article.status || "published",
-        tags: Array.isArray(article.tags)
-          ? article.tags.join(", ")
-          : "",
+        tags: Array.isArray(article.tags) ? article.tags.join(", ") : "",
         is_trending: article.is_trending || false,
         image_url: article.image?.url || "",
         image_credit: article.image?.credit || "",
@@ -55,287 +55,374 @@ export default function ArticleForm({
     } else {
       setForm(initialForm);
     }
+    setError("");
+    setPreview(false);
   }, [article, open]);
 
   const handleChange = (e) => {
-    const {
-      name,
-      value,
-      type,
-      checked,
-    } = e.target;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : value,
-    }));
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => {
+      const updated = {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      };
+      if (name === "title" && !article) {
+        updated.slug = value
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+      }
+      return updated;
+    });
   };
 
   const handleSubmit = async () => {
+    setError("");
+
+    if (!form.title.trim() || !form.slug.trim() || !form.domain_slug) {
+      setError("Title, slug, and category are required.");
+      return;
+    }
+    if (!form.image_url.trim()) {
+      setError("Image URL is required.");
+      return;
+    }
+
     try {
       setLoading(true);
 
       const payload = {
-        title: form.title,
-        slug: form.slug,
-        description: form.description,
-        content: form.content,
+        title: form.title.trim(),
+        slug: form.slug.trim(),
+        description: form.description.trim(),
+        content: form.content.trim(),
         domain_slug: form.domain_slug,
         status: form.status,
         tags: form.tags
           .split(",")
-          .map((tag) => tag.trim())
+          .map((t) => t.trim())
           .filter(Boolean),
         is_trending: form.is_trending,
         image: {
-          url: form.image_url,
-          credit: form.image_credit || null,
+          url: form.image_url.trim(),
+          ...(form.image_credit.trim() && {
+            credit: form.image_credit.trim(),
+          }),
         },
       };
 
       if (article) {
-        await articleApi.update(
-          token,
-          article.slug,
-          payload
-        );
-
-        alert(
-          "Article Updated Successfully"
-        );
+        await articleApi.update(token, article.slug, payload);
+        addToast("Article updated successfully", "success");
       } else {
-        await articleApi.create(
-          token,
-          payload
-        );
-
-        alert(
-          "Article Created Successfully"
-        );
+        await articleApi.create(token, payload);
+        addToast("Article published successfully", "success");
       }
 
       await refetch();
-
       setOpen(false);
-
       setForm(initialForm);
-
     } catch (err) {
-      console.error(err);
-
-      alert(
-        err.message ||
-          "Failed to save article"
-      );
+      const msg = err.message || "Failed to save article";
+      setError(msg);
+      addToast(msg, "error");
     } finally {
       setLoading(false);
     }
   };
 
+  if (!open) return null;
+
   return (
-    <Modal
-      open={open}
-      onClose={() =>
-        setOpen(false)
-      }
-    >
-      <div className="bg-white rounded-3xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={() => setOpen(false)}
+      />
 
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-[#111111]">
-            {article
-              ? "Edit Article"
-              : "Create Article"}
-          </h2>
-
-          <p className="text-gray-500 mt-2">
-            {article
-              ? "Update article details"
-              : "Publish a new article to TechPolarity"}
-          </p>
+      {/* Drawer */}
+      <div className="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-white shadow-2xl flex flex-col overflow-hidden">
+        {/* Drawer Header */}
+        <div className="flex items-center justify-between px-8 py-5 border-b border-gray-100 flex-shrink-0">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">
+              {article ? "Edit Article" : "New Article"}
+            </h2>
+            <p className="text-gray-400 text-xs mt-0.5">
+              {article
+                ? "Update article details"
+                : "Fill in the details to publish"}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPreview(!preview)}
+              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-300 transition"
+            >
+              {preview ? <EyeOff size={14} /> : <Eye size={14} />}
+              {preview ? "Edit" : "Preview"}
+            </button>
+            <button
+              onClick={() => setOpen(false)}
+              className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-5">
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto px-8 py-6">
+          {error && (
+            <div className="mb-5 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm">
+              {error}
+            </div>
+          )}
 
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Title
-            </label>
+          {preview ? (
+            <div className="space-y-4 bg-gray-50 rounded-2xl p-6">
+              <h1 className="text-2xl font-bold text-gray-900">
+                {form.title || "(No title)"}
+              </h1>
+              <p className="text-xs font-mono text-gray-400">
+                /article/{form.slug || "slug"}
+              </p>
+              {form.image_url && (
+                <img
+                  src={form.image_url}
+                  alt="preview"
+                  className="w-full aspect-video object-cover rounded-xl"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
+                />
+              )}
+              <p className="text-gray-600">
+                {form.description || "(No description)"}
+              </p>
+              <div className="whitespace-pre-wrap text-gray-500 text-sm border-t border-gray-200 pt-4 leading-relaxed">
+                {form.content || "(No content)"}
+              </div>
+              <div className="flex gap-2 flex-wrap pt-2">
+                {form.tags
+                  .split(",")
+                  .filter(Boolean)
+                  .map((t) => (
+                    <span
+                      key={t}
+                      className="px-3 py-1 bg-gray-200 rounded-full text-xs"
+                    >
+                      {t.trim()}
+                    </span>
+                  ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {/* Title + Slug */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    Title *
+                  </label>
+                  <input
+                    name="title"
+                    value={form.title}
+                    onChange={handleChange}
+                    placeholder="Article title"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    Slug *
+                  </label>
+                  <input
+                    name="slug"
+                    value={form.slug}
+                    onChange={handleChange}
+                    disabled={!!article}
+                    placeholder="article-slug"
+                    className={`${inputClass} font-mono ${
+                      article ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  />
+                </div>
+              </div>
 
-            <input
-              name="title"
-              value={form.title}
-              onChange={handleChange}
-              placeholder="Enter article title"
-              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
-            />
-          </div>
+              {/* Category + Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    Category *
+                  </label>
+                  <select
+                    name="domain_slug"
+                    value={form.domain_slug}
+                    onChange={handleChange}
+                    className={inputClass}
+                  >
+                    <option value="" disabled>
+                      Select a category
+                    </option>
+                    {categories.map((c) => (
+                      <option key={c.slug} value={c.slug}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    Status
+                  </label>
+                  <select
+                    name="status"
+                    value={form.status}
+                    onChange={handleChange}
+                    className={inputClass}
+                  >
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                </div>
+              </div>
 
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Slug
-            </label>
-<input
-  name="slug"
-  value={form.slug}
-  onChange={handleChange}
-  disabled={!!article}
-  placeholder="article-slug"
-  className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl disabled:bg-gray-100 disabled:text-gray-500"
-/>
-          </div>
+              {/* Tags */}
+              <div>
+                <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Tags
+                </label>
+                <input
+                  name="tags"
+                  value={form.tags}
+                  onChange={handleChange}
+                  placeholder="ai, react, typescript  (comma-separated)"
+                  className={inputClass}
+                />
+              </div>
 
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Domain
-            </label>
+              {/* Image URL + Credit */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    Image URL *
+                  </label>
+                  <input
+                    name="image_url"
+                    value={form.image_url}
+                    onChange={handleChange}
+                    placeholder="https://images.unsplash.com/..."
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    Image Credit
+                  </label>
+                  <input
+                    name="image_credit"
+                    value={form.image_credit}
+                    onChange={handleChange}
+                    placeholder="Photo by ..."
+                    className={inputClass}
+                  />
+                </div>
+              </div>
 
-            <select
-              name="domain_slug"
-              value={form.domain_slug}
-              onChange={handleChange}
-              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
-            >
-              <option value="" disabled>
-                Select a domain
-              </option>
+              {/* Image preview */}
+              {form.image_url ? (
+                <img
+                  src={form.image_url}
+                  alt="preview"
+                  className="w-full h-36 object-cover rounded-xl border border-gray-100"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="w-full h-36 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-300">
+                  <ImageIcon size={24} />
+                  <p className="text-xs mt-2">Image preview</p>
+                </div>
+              )}
 
-              {categories.map((category) => (
-                <option key={category.slug} value={category.slug}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              {/* Description */}
+              <div>
+                <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Short summary shown on article cards…"
+                  rows={3}
+                  className={inputClass}
+                />
+              </div>
 
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Image URL
-            </label>
+              {/* Content */}
+              <div>
+                <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Content
+                  <span className="ml-2 text-gray-400 font-normal normal-case">
+                    {form.content.length} chars
+                  </span>
+                </label>
+                <textarea
+                  name="content"
+                  value={form.content}
+                  onChange={handleChange}
+                  placeholder="Write the full article content here. Use blank lines to separate paragraphs."
+                  rows={12}
+                  className={`${inputClass} font-mono text-sm leading-relaxed`}
+                />
+              </div>
 
-            <input
-              name="image_url"
-              value={form.image_url}
-              onChange={handleChange}
-              placeholder="https://example.com/image.jpg"
-              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
-            />
-          </div>
+              {/* Trending toggle */}
+              <label className="flex items-center gap-3 cursor-pointer select-none group">
+                <div
+                  onClick={() =>
+                    setForm((p) => ({ ...p, is_trending: !p.is_trending }))
+                  }
+                  className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 ${
+                    form.is_trending ? "bg-[#FF0000]" : "bg-gray-200"
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                      form.is_trending ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  Mark as Trending
+                </span>
+              </label>
+            </div>
+          )}
+        </div>
 
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Image Credit (optional)
-            </label>
-
-            <input
-              name="image_credit"
-              value={form.image_credit}
-              onChange={handleChange}
-              placeholder="Photo by..."
-              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Tags
-            </label>
-
-            <input
-              name="tags"
-              value={form.tags}
-              onChange={handleChange}
-              placeholder="react, ai, javascript"
-              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Description
-            </label>
-
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              placeholder="Short article description"
-              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl h-32"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Content
-            </label>
-
-            <textarea
-              name="content"
-              value={form.content}
-              onChange={handleChange}
-              placeholder="Write full article content..."
-              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl h-48"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Status
-            </label>
-
-            <select
-              name="status"
-              value={form.status}
-              onChange={handleChange}
-              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
-            >
-              <option value="published">
-                Published
-              </option>
-
-              <option value="draft">
-                Draft
-              </option>
-
-              <option value="deleted">
-                Deleted
-              </option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              name="is_trending"
-              checked={form.is_trending}
-              onChange={handleChange}
-              className="w-5 h-5"
-            />
-
-            <label>
-              Mark as Trending
-            </label>
-          </div>
-
+        {/* Footer */}
+        <div className="px-8 py-5 border-t border-gray-100 flex-shrink-0">
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-semibold"
+            disabled={loading || preview}
+            className="w-full bg-[#FF0000] hover:bg-[#D80000] text-white py-3.5 rounded-xl font-semibold transition shadow-lg shadow-red-500/20 disabled:opacity-60"
           >
             {loading
               ? article
-                ? "Updating..."
-                : "Creating..."
+                ? "Updating…"
+                : "Publishing…"
               : article
               ? "Update Article"
-              : "Create Article"}
+              : "Publish Article"}
           </button>
         </div>
       </div>
-    </Modal>
+    </div>
   );
 }

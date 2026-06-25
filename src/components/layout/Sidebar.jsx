@@ -1,163 +1,77 @@
+import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   FileText,
+  Tag,
   LogOut,
+  Zap,
 } from "lucide-react";
+import useAuthStore from "../../store/authStore";
 
-const items = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    id: "articles",
-    label: "Articles",
-    icon: FileText,
-  },
+const navItems = [
+  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/articles", label: "Articles", icon: FileText },
+  { to: "/categories", label: "Categories", icon: Tag },
 ];
 
-export default function Sidebar({
-  page,
-  setPage,
-  logout,
-}) {
+export default function Sidebar() {
+  const logout = useAuthStore((s) => s.logout);
+
   return (
-    <aside
-      className="
-        w-72
-        h-screen
-        bg-white
-        border-r
-        border-gray-200
-        flex
-        flex-col
-        justify-between
-        shadow-lg
-      "
-    >
-      {/* Logo Section */}
-      <div>
-        <div className="px-6 py-8 border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <img
-              src="/logo-techpolarity.png"
-              alt="TechPolarity"
-              className="h-14 w-auto object-contain"
-            />
-
-            <div>
-              <h1 className="text-xl font-bold text-[#111111]">
-                TechPolarity
-              </h1>
-
-              <p className="text-xs text-gray-500">
-                Admin Dashboard
-              </p>
-            </div>
+    <aside className="w-64 h-screen bg-[#111111] flex flex-col fixed left-0 top-0 z-40">
+      {/* Logo */}
+      <div className="px-5 py-6 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-[#FF0000] rounded-xl flex items-center justify-center flex-shrink-0">
+            <Zap size={17} className="text-white" />
+          </div>
+          <div>
+            <p className="text-white font-bold text-[15px] leading-tight">
+              TechPolarity
+            </p>
+            <p className="text-white/40 text-[11px] mt-0.5">Admin CMS</p>
           </div>
         </div>
-
-        {/* Navigation */}
-        <nav className="p-4 space-y-3">
-          {items.map((item) => {
-            const Icon = item.icon;
-
-            const active =
-              page === item.id;
-
-            return (
-              <button
-                key={item.id}
-                onClick={() =>
-                  setPage(item.id)
-                }
-                className={`
-                  w-full
-                  flex
-                  items-center
-                  gap-3
-                  px-5
-                  py-4
-                  rounded-2xl
-                  font-medium
-                  cursor-pointer
-                  transition-all
-                  duration-300
-                  transform
-
-                  ${
-                    active
-                      ? `
-                        bg-[#FF0000]
-                        text-white
-                        shadow-lg
-                        shadow-red-200
-                        scale-[1.02]
-                      `
-                      : `
-                        text-[#222222]
-                        hover:bg-red-50
-                        hover:text-[#FF0000]
-                        hover:translate-x-1
-                      `
-                  }
-                `}
-              >
-                <Icon size={20} />
-
-                <span>
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
-        </nav>
       </div>
 
-      {/* Footer */}
-      <div className="p-5 border-t border-gray-100">
+      {/* Navigation */}
+      <nav className="flex-1 p-3 space-y-1 pt-4">
+        <p className="text-white/30 text-[10px] font-semibold uppercase tracking-widest px-3 mb-3">
+          Menu
+        </p>
 
+        {navItems.map(({ to, label, icon: Icon, end }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                isActive
+                  ? "bg-[#FF0000] text-white shadow-lg shadow-red-500/25"
+                  : "text-white/55 hover:text-white hover:bg-white/8"
+              }`
+            }
+          >
+            <Icon size={17} />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-white/10">
         <button
           onClick={logout}
-          className="
-            w-full
-            flex
-            items-center
-            justify-center
-            gap-3
-            py-4
-            rounded-2xl
-            text-white
-            font-semibold
-            bg-gradient-to-r
-            from-[#FF0000]
-            to-[#D10000]
-            shadow-lg
-            shadow-red-200
-            transition-all
-            duration-300
-            hover:scale-105
-            hover:shadow-red-300
-            hover:-translate-y-1
-            active:scale-95
-            cursor-pointer
-          "
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/50 hover:text-white hover:bg-white/8 transition-all duration-150"
         >
-          <LogOut size={20} />
-
-          Logout
+          <LogOut size={17} />
+          <span>Sign Out</span>
         </button>
 
-        <div className="mt-5 text-center">
-          <p className="text-xs text-gray-400">
-            TechPolarity CMS v1.0
-          </p>
-
-          <p className="text-[10px] text-gray-300 mt-1">
-            Powered by TechPolarity
-          </p>
-        </div>
+        <p className="text-white/20 text-[10px] text-center mt-3">
+          TechPolarity CMS v2.0
+        </p>
       </div>
     </aside>
   );
