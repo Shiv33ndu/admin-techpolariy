@@ -19,7 +19,8 @@ export default function ArticleForm({
     status: "published",
     tags: "",
     is_trending: false,
-    image: {},
+    image_url: "",
+    image_credit: "",
   };
 
   const [form, setForm] = useState(initialForm);
@@ -48,7 +49,8 @@ export default function ArticleForm({
           ? article.tags.join(", ")
           : "",
         is_trending: article.is_trending || false,
-        image: article.image || {},
+        image_url: article.image?.url || "",
+        image_credit: article.image?.credit || "",
       });
     } else {
       setForm(initialForm);
@@ -88,7 +90,10 @@ export default function ArticleForm({
           .map((tag) => tag.trim())
           .filter(Boolean),
         is_trending: form.is_trending,
-        image: {},
+        image: {
+          url: form.image_url,
+          credit: form.image_credit || null,
+        },
       };
 
       if (article) {
@@ -204,6 +209,34 @@ export default function ArticleForm({
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-gray-700">
+              Image URL
+            </label>
+
+            <input
+              name="image_url"
+              value={form.image_url}
+              onChange={handleChange}
+              placeholder="https://example.com/image.jpg"
+              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-gray-700">
+              Image Credit (optional)
+            </label>
+
+            <input
+              name="image_credit"
+              value={form.image_credit}
+              onChange={handleChange}
+              placeholder="Photo by..."
+              className="w-full border border-gray-300 bg-[#fafafa] px-5 py-4 rounded-2xl"
+            />
           </div>
 
           <div>
