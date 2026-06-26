@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { categoryApi } from "../api/categories.api";
 import { sectionApi } from "../api/sections.api";
 import useAuthStore from "../store/authStore";
 import useToastStore from "../store/toastStore";
@@ -10,23 +9,22 @@ import {
   Trash2,
   ToggleLeft,
   ToggleRight,
-  Tag,
+  LayoutGrid,
   X,
 } from "lucide-react";
 
 const inputClass =
   "w-full border border-gray-200 bg-gray-50 px-4 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-50 focus:border-[#FF0000] transition";
 
-export default function CategoriesPage() {
+export default function SectionsPage() {
   const token = useAuthStore((s) => s.token);
   const { addToast } = useToastStore();
 
-  const [categories, setCategories] = useState([]);
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", slug: "", section_slug: "", order: 0 });
+  const [form, setForm] = useState({ name: "", slug: "", order: 0 });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -35,44 +33,29 @@ export default function CategoriesPage() {
   const load = async () => {
     try {
       setLoading(true);
-      const data = await categoryApi.listAll(token);
-      setCategories(Array.isArray(data) ? data : []);
+      const data = await sectionApi.listAll(token);
+      setSections(Array.isArray(data) ? data : []);
     } catch {
-      setCategories([]);
+      setSections([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadSections = async () => {
-    try {
-      const data = await sectionApi.listActive(token);
-      setSections(Array.isArray(data) ? data : []);
-    } catch {
-      setSections([]);
-    }
-  };
-
   useEffect(() => {
     load();
-    loadSections();
   }, []);
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", slug: "", section_slug: "", order: 0 });
+    setForm({ name: "", slug: "", order: 0 });
     setError("");
     setShowForm(true);
   };
 
-  const openEdit = (cat) => {
-    setEditing(cat);
-    setForm({
-      name: cat.name,
-      slug: cat.slug,
-      section_slug: cat.section_slug || "",
-      order: cat.order ?? 0,
-    });
+  const openEdit = (section) => {
+    setEditing(section);
+    setForm({ name: section.name, slug: section.slug, order: section.order ?? 0 });
     setError("");
     setShowForm(true);
   };
@@ -104,26 +87,24 @@ export default function CategoriesPage() {
       setSaving(true);
       setError("");
       if (editing) {
-        await categoryApi.update(token, editing.slug, {
+        await sectionApi.update(token, editing.slug, {
           name: form.name,
-          section_slug: form.section_slug || null,
           order: form.order,
         });
-        addToast("Category updated", "success");
+        addToast("Section updated", "success");
       } else {
-        await categoryApi.create(token, {
+        await sectionApi.create(token, {
           name: form.name,
           slug: form.slug,
-          section_slug: form.section_slug || null,
           order: form.order,
           is_active: true,
         });
-        addToast("Category created", "success");
+        addToast("Section created", "success");
       }
       setShowForm(false);
       await load();
     } catch (err) {
-      const msg = err.message || "Failed to save category.";
+      const msg = err.message || "Failed to save section.";
       setError(msg);
       addToast(msg, "error");
     } finally {
@@ -135,8 +116,8 @@ export default function CategoriesPage() {
     if (!deleteTarget) return;
     try {
       setDeleting(true);
-      await categoryApi.delete(token, deleteTarget.slug);
-      addToast(`Category "${deleteTarget.name}" deleted`, "success");
+      await sectionApi.delete(token, deleteTarget.slug);
+      addToast(`Section "${deleteTarget.name}" deleted`, "success");
       setDeleteTarget(null);
       await load();
     } catch (err) {
@@ -146,11 +127,11 @@ export default function CategoriesPage() {
     }
   };
 
-  const handleToggle = async (cat) => {
+  const handleToggle = async (section) => {
     try {
-      await categoryApi.toggleActive(token, cat.slug, !cat.is_active);
+      await sectionApi.toggleActive(token, section.slug, !section.is_active);
       addToast(
-        `"${cat.name}" ${!cat.is_active ? "activated" : "deactivated"}`,
+        `"${section.name}" ${!section.is_active ? "activated" : "deactivated"}`,
         "success"
       );
       await load();
@@ -164,11 +145,11 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Sections</h1>
           <p className="text-gray-500 text-sm mt-1">
             {loading
               ? "Loading…"
-              : `${categories.length} categor${categories.length !== 1 ? "ies" : "y"}`}
+              : `${sections.length} section${sections.length !== 1 ? "s" : ""} — top header nav`}
           </p>
         </div>
         <button
@@ -176,23 +157,23 @@ export default function CategoriesPage() {
           className="flex items-center gap-2 bg-[#FF0000] hover:bg-[#D80000] text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-red-500/20 transition-all"
         >
           <Plus size={15} />
-          New Category
+          New Section
         </button>
       </div>
 
-      {/* Category Form Modal */}
+      {/* Section Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  {editing ? "Edit Category" : "New Category"}
+                  {editing ? "Edit Section" : "New Section"}
                 </h2>
                 <p className="text-gray-400 text-xs mt-0.5">
                   {editing
                     ? "Update name and display order"
-                    : "Create a new content category"}
+                    : "Create a new top-header section"}
                 </p>
               </div>
               <button
@@ -218,7 +199,7 @@ export default function CategoriesPage() {
                   name="name"
                   value={form.name}
                   onChange={handleChange}
-                  placeholder="e.g. Artificial Intelligence"
+                  placeholder="e.g. Tech"
                   className={inputClass}
                   required
                 />
@@ -232,7 +213,7 @@ export default function CategoriesPage() {
                   name="slug"
                   value={form.slug}
                   onChange={handleChange}
-                  placeholder="e.g. ai"
+                  placeholder="e.g. tech"
                   className={`${inputClass} font-mono ${
                     editing ? "opacity-50 cursor-not-allowed" : ""
                   }`}
@@ -244,25 +225,6 @@ export default function CategoriesPage() {
                     Slug cannot be changed after creation.
                   </p>
                 )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-                  Parent Section
-                </label>
-                <select
-                  name="section_slug"
-                  value={form.section_slug}
-                  onChange={handleChange}
-                  className={inputClass}
-                >
-                  <option value="">No section</option>
-                  {sections.map((s) => (
-                    <option key={s.slug} value={s.slug}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
               </div>
 
               <div>
@@ -289,7 +251,7 @@ export default function CategoriesPage() {
                     ? "Saving…"
                     : editing
                     ? "Save Changes"
-                    : "Create Category"}
+                    : "Create Section"}
                 </button>
                 <button
                   type="button"
@@ -307,22 +269,22 @@ export default function CategoriesPage() {
       {/* Table */}
       {loading ? (
         <div className="bg-white rounded-2xl p-8 text-center text-gray-400 text-sm shadow-sm border border-gray-100">
-          Loading categories…
+          Loading sections…
         </div>
-      ) : categories.length === 0 ? (
+      ) : sections.length === 0 ? (
         <div className="bg-white rounded-2xl p-16 text-center shadow-sm border border-gray-100">
-          <Tag size={44} className="mx-auto text-gray-200 mb-4" />
+          <LayoutGrid size={44} className="mx-auto text-gray-200 mb-4" />
           <p className="text-lg font-semibold text-gray-500">
-            No categories yet
+            No sections yet
           </p>
           <p className="text-gray-400 text-sm mt-1">
-            Create your first category to start organizing articles.
+            Create your first section to power the top header nav.
           </p>
           <button
             onClick={openCreate}
             className="mt-5 inline-flex items-center gap-2 bg-[#FF0000] text-white px-5 py-2.5 rounded-xl text-sm font-semibold"
           >
-            <Plus size={14} /> Create Category
+            <Plus size={14} /> Create Section
           </button>
         </div>
       ) : (
@@ -336,9 +298,6 @@ export default function CategoriesPage() {
                 <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden sm:table-cell">
                   Slug
                 </th>
-                <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
-                  Section
-                </th>
                 <th className="px-4 py-3.5 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
                   Order
                 </th>
@@ -351,69 +310,59 @@ export default function CategoriesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50/80">
-              {categories.map((cat) => (
+              {sections.map((section) => (
                 <tr
-                  key={cat.slug}
+                  key={section.slug}
                   className="hover:bg-gray-50/60 transition"
                 >
                   <td className="px-6 py-4 font-semibold text-sm text-gray-900">
-                    {cat.name}
+                    {section.name}
                   </td>
                   <td className="px-4 py-4 hidden sm:table-cell">
                     <code className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg">
-                      {cat.slug}
+                      {section.slug}
                     </code>
                   </td>
-                  <td className="px-4 py-4 hidden md:table-cell">
-                    {cat.section_slug ? (
-                      <span className="text-xs text-gray-600">
-                        {sections.find((s) => s.slug === cat.section_slug)?.name ||
-                          cat.section_slug}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-gray-300">—</span>
-                    )}
-                  </td>
                   <td className="px-4 py-4 text-center text-sm text-gray-500 hidden md:table-cell">
-                    {cat.order ?? 0}
+                    {section.order ?? 0}
                   </td>
                   <td className="px-4 py-4 text-center">
                     <span
                       className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                        cat.is_active
+                        section.is_active
                           ? "bg-green-100 text-green-700"
                           : "bg-gray-100 text-gray-500"
                       }`}
                     >
-                      {cat.is_active ? "Active" : "Inactive"}
+                      {section.is_active ? "Active" : "Inactive"}
                     </span>
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex justify-center gap-1">
                       <button
-                        onClick={() => handleToggle(cat)}
+                        onClick={() => handleToggle(section)}
                         className={`p-2 rounded-lg transition ${
-                          cat.is_active
+                          section.is_active
                             ? "hover:bg-green-50 text-gray-400 hover:text-green-600"
                             : "hover:bg-gray-100 text-gray-300 hover:text-gray-500"
                         }`}
-                        title={cat.is_active ? "Deactivate" : "Activate"}
+                        title={section.is_active ? "Deactivate" : "Activate"}
                       >
-                        {cat.is_active ? (
+                        {section.is_active ? (
                           <ToggleRight size={16} />
                         ) : (
                           <ToggleLeft size={16} />
                         )}
                       </button>
                       <button
-                        onClick={() => openEdit(cat)}
+                        onClick={() => openEdit(section)}
                         className="p-2 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition"
                         title="Edit"
                       >
                         <Pencil size={14} />
                       </button>
                       <button
-                        onClick={() => setDeleteTarget(cat)}
+                        onClick={() => setDeleteTarget(section)}
                         className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition"
                         title="Delete"
                       >
@@ -430,8 +379,8 @@ export default function CategoriesPage() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Delete Category"
-        message={`Delete "${deleteTarget?.name}"? Articles in this category will not be deleted, but they will no longer appear in navigation.`}
+        title="Delete Section"
+        message={`Delete "${deleteTarget?.name}"? Categories linked to this section will keep their link to a section slug that no longer exists, until reassigned.`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deleting}

@@ -3,6 +3,7 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ArticlesPage from "./pages/ArticlesPage";
 import CategoriesPage from "./pages/CategoriesPage";
+import SectionsPage from "./pages/SectionsPage";
 import AdminLayout from "./components/layout/AdminLayout";
 import Toaster from "./components/ui/Toaster";
 import useAuthStore from "./store/authStore";
@@ -32,6 +33,7 @@ export default function App() {
                   <Route path="/" element={<DashboardPage />} />
                   <Route path="/articles" element={<ArticlesPage />} />
                   <Route path="/categories" element={<CategoriesPage />} />
+                  <Route path="/sections" element={<SectionsPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </AdminLayout>

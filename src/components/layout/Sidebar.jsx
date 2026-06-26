@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   FileText,
   Tag,
+  LayoutGrid,
   LogOut,
   Zap,
 } from "lucide-react";
@@ -12,6 +13,7 @@ const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/articles", label: "Articles", icon: FileText },
   { to: "/categories", label: "Categories", icon: Tag },
+  { to: "/sections", label: "Sections", icon: LayoutGrid },
 ];
 
 export default function Sidebar() {
