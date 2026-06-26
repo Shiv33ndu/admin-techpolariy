@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Eye, EyeOff, X, ImageIcon, Upload, Loader2 } from "lucide-react";
 import { articleApi } from "../../api/articles.api";
 import { categoryApi } from "../../api/categories.api";
+import { sectionApi } from "../../api/sections.api";
 import useAuthStore from "../../store/authStore";
 import useToastStore from "../../store/toastStore";
 import { uploadImageToCloudinary } from "../../lib/cloudinary";
@@ -12,6 +13,7 @@ const initialForm = {
   description: "",
   content: "",
   domain_slug: "",
+  section_slug: "",
   status: "published",
   tags: "",
   is_trending: false,
@@ -29,6 +31,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [sections, setSections] = useState([]);
   const [preview, setPreview] = useState(false);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -37,6 +40,10 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
     categoryApi
       .listActive(token)
       .then((data) => setCategories(Array.isArray(data) ? data : []))
+      .catch(() => {});
+    sectionApi
+      .listActive(token)
+      .then((data) => setSections(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, [token]);
 
@@ -48,6 +55,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
         description: article.description || "",
         content: article.content || "",
         domain_slug: article.domain_slug || "",
+        section_slug: "",
         status: article.status || "published",
         tags: Array.isArray(article.tags) ? article.tags.join(", ") : "",
         is_trending: article.is_trending || false,
@@ -61,6 +69,18 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
     setPreview(false);
   }, [article, open]);
 
+  // Once categories are loaded, prefill the section dropdown with whatever
+  // the selected category is currently linked to.
+  useEffect(() => {
+    if (!form.domain_slug || categories.length === 0) return;
+    const cat = categories.find((c) => c.slug === form.domain_slug);
+    if (cat && cat.section_slug) {
+      setForm((prev) =>
+        prev.section_slug ? prev : { ...prev, section_slug: cat.section_slug }
+      );
+    }
+  }, [categories, form.domain_slug]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => {
@@ -73,6 +93,10 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "");
+      }
+      if (name === "domain_slug") {
+        const cat = categories.find((c) => c.slug === value);
+        updated.section_slug = cat?.section_slug || "";
       }
       return updated;
     });
@@ -108,6 +132,15 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
 
     try {
       setLoading(true);
+
+      const selectedCategory = categories.find(
+        (c) => c.slug === form.domain_slug
+      );
+      if (selectedCategory && (selectedCategory.section_slug || "") !== form.section_slug) {
+        await categoryApi.update(token, form.domain_slug, {
+          section_slug: form.section_slug || null,
+        });
+      }
 
       const payload = {
         title: form.title.trim(),
@@ -291,6 +324,33 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                     ))}
                   </select>
                 </div>
+                <div>
+                  <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    Parent Section
+                  </label>
+                  <select
+                    name="section_slug"
+                    value={form.section_slug}
+                    onChange={handleChange}
+                    disabled={!form.domain_slug}
+                    className={`${inputClass} ${
+                      !form.domain_slug ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <option value="">No section</option>
+                    {sections.map((s) => (
+                      <option key={s.slug} value={s.slug}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Links the selected category to this top-header section.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
                     Status
