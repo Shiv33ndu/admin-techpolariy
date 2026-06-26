@@ -37,6 +37,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
+    if (!open) return;
     categoryApi
       .listActive(token)
       .then((data) => setCategories(Array.isArray(data) ? data : []))
@@ -45,7 +46,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
       .listActive(token)
       .then((data) => setSections(Array.isArray(data) ? data : []))
       .catch(() => {});
-  }, [token]);
+  }, [token, open]);
 
   useEffect(() => {
     if (article) {
