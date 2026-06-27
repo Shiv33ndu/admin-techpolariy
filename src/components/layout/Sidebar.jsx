@@ -12,8 +12,8 @@ import useAuthStore from "../../store/authStore";
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/articles", label: "Articles", icon: FileText },
-  { to: "/categories", label: "Categories", icon: Tag },
-  { to: "/sections", label: "Sections", icon: LayoutGrid },
+  { to: "/sections", label: "Headers", icon: LayoutGrid },
+  { to: "/categories", label: "Sub-Categories", icon: Tag },
 ];
 
 export default function Sidebar() {

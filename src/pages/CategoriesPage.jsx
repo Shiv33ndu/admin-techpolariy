@@ -109,7 +109,7 @@ export default function CategoriesPage() {
           section_slug: form.section_slug || null,
           order: form.order,
         });
-        addToast("Category updated", "success");
+        addToast("Sub-category updated", "success");
       } else {
         await categoryApi.create(token, {
           name: form.name,
@@ -118,12 +118,12 @@ export default function CategoriesPage() {
           order: form.order,
           is_active: true,
         });
-        addToast("Category created", "success");
+        addToast("Sub-category created", "success");
       }
       setShowForm(false);
       await load();
     } catch (err) {
-      const msg = err.message || "Failed to save category.";
+      const msg = err.message || "Failed to save sub-category.";
       setError(msg);
       addToast(msg, "error");
     } finally {
@@ -136,7 +136,7 @@ export default function CategoriesPage() {
     try {
       setDeleting(true);
       await categoryApi.delete(token, deleteTarget.slug);
-      addToast(`Category "${deleteTarget.name}" deleted`, "success");
+      addToast(`Sub-category "${deleteTarget.name}" deleted`, "success");
       setDeleteTarget(null);
       await load();
     } catch (err) {
@@ -164,11 +164,11 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Sub-Categories</h1>
           <p className="text-gray-500 text-sm mt-1">
             {loading
               ? "Loading…"
-              : `${categories.length} categor${categories.length !== 1 ? "ies" : "y"}`}
+              : `${categories.length} sub-categor${categories.length !== 1 ? "ies" : "y"}`}
           </p>
         </div>
         <button
@@ -176,23 +176,23 @@ export default function CategoriesPage() {
           className="flex items-center gap-2 bg-[#FF0000] hover:bg-[#D80000] text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-red-500/20 transition-all"
         >
           <Plus size={15} />
-          New Category
+          New Sub-Category
         </button>
       </div>
 
-      {/* Category Form Modal */}
+      {/* Sub-Category Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  {editing ? "Edit Category" : "New Category"}
+                  {editing ? "Edit Sub-Category" : "New Sub-Category"}
                 </h2>
                 <p className="text-gray-400 text-xs mt-0.5">
                   {editing
                     ? "Update name and display order"
-                    : "Create a new content category"}
+                    : "Create a new content sub-category"}
                 </p>
               </div>
               <button
@@ -248,7 +248,7 @@ export default function CategoriesPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-                  Parent Section
+                  Parent Header
                 </label>
                 <select
                   name="section_slug"
@@ -256,7 +256,7 @@ export default function CategoriesPage() {
                   onChange={handleChange}
                   className={inputClass}
                 >
-                  <option value="">No section</option>
+                  <option value="">No header</option>
                   {sections.map((s) => (
                     <option key={s.slug} value={s.slug}>
                       {s.name}
@@ -289,7 +289,7 @@ export default function CategoriesPage() {
                     ? "Saving…"
                     : editing
                     ? "Save Changes"
-                    : "Create Category"}
+                    : "Create Sub-Category"}
                 </button>
                 <button
                   type="button"
@@ -307,22 +307,22 @@ export default function CategoriesPage() {
       {/* Table */}
       {loading ? (
         <div className="bg-white rounded-2xl p-8 text-center text-gray-400 text-sm shadow-sm border border-gray-100">
-          Loading categories…
+          Loading sub-categories…
         </div>
       ) : categories.length === 0 ? (
         <div className="bg-white rounded-2xl p-16 text-center shadow-sm border border-gray-100">
           <Tag size={44} className="mx-auto text-gray-200 mb-4" />
           <p className="text-lg font-semibold text-gray-500">
-            No categories yet
+            No sub-categories yet
           </p>
           <p className="text-gray-400 text-sm mt-1">
-            Create your first category to start organizing articles.
+            Create your first sub-category to start organizing articles.
           </p>
           <button
             onClick={openCreate}
             className="mt-5 inline-flex items-center gap-2 bg-[#FF0000] text-white px-5 py-2.5 rounded-xl text-sm font-semibold"
           >
-            <Plus size={14} /> Create Category
+            <Plus size={14} /> Create Sub-Category
           </button>
         </div>
       ) : (
@@ -337,7 +337,7 @@ export default function CategoriesPage() {
                   Slug
                 </th>
                 <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
-                  Section
+                  Header
                 </th>
                 <th className="px-4 py-3.5 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
                   Order
@@ -430,8 +430,8 @@ export default function CategoriesPage() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Delete Category"
-        message={`Delete "${deleteTarget?.name}"? Articles in this category will not be deleted, but they will no longer appear in navigation.`}
+        title="Delete Sub-Category"
+        message={`Delete "${deleteTarget?.name}"? Articles in this sub-category will not be deleted, but they will no longer appear in navigation.`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deleting}

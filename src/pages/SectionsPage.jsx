@@ -91,7 +91,7 @@ export default function SectionsPage() {
           name: form.name,
           order: form.order,
         });
-        addToast("Section updated", "success");
+        addToast("Header updated", "success");
       } else {
         await sectionApi.create(token, {
           name: form.name,
@@ -99,12 +99,12 @@ export default function SectionsPage() {
           order: form.order,
           is_active: true,
         });
-        addToast("Section created", "success");
+        addToast("Header created", "success");
       }
       setShowForm(false);
       await load();
     } catch (err) {
-      const msg = err.message || "Failed to save section.";
+      const msg = err.message || "Failed to save header.";
       setError(msg);
       addToast(msg, "error");
     } finally {
@@ -117,7 +117,7 @@ export default function SectionsPage() {
     try {
       setDeleting(true);
       await sectionApi.delete(token, deleteTarget.slug);
-      addToast(`Section "${deleteTarget.name}" deleted`, "success");
+      addToast(`Header "${deleteTarget.name}" deleted`, "success");
       setDeleteTarget(null);
       await load();
     } catch (err) {
@@ -145,11 +145,11 @@ export default function SectionsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Sections</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Headers</h1>
           <p className="text-gray-500 text-sm mt-1">
             {loading
               ? "Loading…"
-              : `${sections.length} section${sections.length !== 1 ? "s" : ""} — top header nav`}
+              : `${sections.length} header${sections.length !== 1 ? "s" : ""} — top header nav`}
           </p>
         </div>
         <button
@@ -157,23 +157,23 @@ export default function SectionsPage() {
           className="flex items-center gap-2 bg-[#FF0000] hover:bg-[#D80000] text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-red-500/20 transition-all"
         >
           <Plus size={15} />
-          New Section
+          New Header
         </button>
       </div>
 
-      {/* Section Form Modal */}
+      {/* Header Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  {editing ? "Edit Section" : "New Section"}
+                  {editing ? "Edit Header" : "New Header"}
                 </h2>
                 <p className="text-gray-400 text-xs mt-0.5">
                   {editing
                     ? "Update name and display order"
-                    : "Create a new top-header section"}
+                    : "Create a new top header item"}
                 </p>
               </div>
               <button
@@ -251,7 +251,7 @@ export default function SectionsPage() {
                     ? "Saving…"
                     : editing
                     ? "Save Changes"
-                    : "Create Section"}
+                    : "Create Header"}
                 </button>
                 <button
                   type="button"
@@ -269,22 +269,22 @@ export default function SectionsPage() {
       {/* Table */}
       {loading ? (
         <div className="bg-white rounded-2xl p-8 text-center text-gray-400 text-sm shadow-sm border border-gray-100">
-          Loading sections…
+          Loading headers…
         </div>
       ) : sections.length === 0 ? (
         <div className="bg-white rounded-2xl p-16 text-center shadow-sm border border-gray-100">
           <LayoutGrid size={44} className="mx-auto text-gray-200 mb-4" />
           <p className="text-lg font-semibold text-gray-500">
-            No sections yet
+            No headers yet
           </p>
           <p className="text-gray-400 text-sm mt-1">
-            Create your first section to power the top header nav.
+            Create your first header to power the top header nav.
           </p>
           <button
             onClick={openCreate}
             className="mt-5 inline-flex items-center gap-2 bg-[#FF0000] text-white px-5 py-2.5 rounded-xl text-sm font-semibold"
           >
-            <Plus size={14} /> Create Section
+            <Plus size={14} /> Create Header
           </button>
         </div>
       ) : (
@@ -379,8 +379,8 @@ export default function SectionsPage() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Delete Section"
-        message={`Delete "${deleteTarget?.name}"? Categories linked to this section will keep their link to a section slug that no longer exists, until reassigned.`}
+        title="Delete Header"
+        message={`Delete "${deleteTarget?.name}"? Sub-categories linked to this header will keep their link to a header slug that no longer exists, until reassigned.`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deleting}

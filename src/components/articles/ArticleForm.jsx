@@ -303,11 +303,11 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                 </div>
               </div>
 
-              {/* Category + Status */}
+              {/* Sub-Category + Status */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Category *
+                    Sub-Category *
                   </label>
                   <select
                     name="domain_slug"
@@ -316,7 +316,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                     className={inputClass}
                   >
                     <option value="" disabled>
-                      Select a category
+                      Select a sub-category
                     </option>
                     {categories.map((c) => (
                       <option key={c.slug} value={c.slug}>
@@ -327,7 +327,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                 </div>
                 <div>
                   <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Parent Section
+                    Parent Header
                   </label>
                   <select
                     name="section_slug"
@@ -338,7 +338,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                       !form.domain_slug ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    <option value="">No section</option>
+                    <option value="">No header</option>
                     {sections.map((s) => (
                       <option key={s.slug} value={s.slug}>
                         {s.name}
@@ -346,7 +346,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                     ))}
                   </select>
                   <p className="text-xs text-gray-400 mt-1">
-                    Links the selected category to this top-header section.
+                    Links the selected sub-category to this header.
                   </p>
                 </div>
               </div>

@@ -178,7 +178,7 @@ export default function ArticlesPage() {
           }}
           className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:border-[#FF0000] focus:ring-2 focus:ring-red-50 transition cursor-pointer text-gray-700"
         >
-          <option value="">All Categories</option>
+          <option value="">All Sub-Categories</option>
           {categories.map((c) => (
             <option key={c.slug} value={c.slug}>
               {c.name}
@@ -211,7 +211,7 @@ export default function ArticlesPage() {
                 Article
               </th>
               <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
-                Category
+                Sub-Category
               </th>
               <th className="px-4 py-3.5 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden lg:table-cell">
                 Trending
