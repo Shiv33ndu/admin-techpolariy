@@ -6,6 +6,7 @@ import { sectionApi } from "../../api/sections.api";
 import useAuthStore from "../../store/authStore";
 import useToastStore from "../../store/toastStore";
 import { uploadImageToCloudinary } from "../../lib/cloudinary";
+import RichTextEditor from "./RichTextEditor";
 
 const initialForm = {
   title: "",
@@ -253,8 +254,15 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
               <p className="text-gray-600">
                 {form.description || "(No description)"}
               </p>
-              <div className="whitespace-pre-wrap text-gray-500 text-sm border-t border-gray-200 pt-4 leading-relaxed">
-                {form.content || "(No content)"}
+              <div className="border-t border-gray-200 pt-4">
+                {form.content ? (
+                  <div
+                    className="prose prose-sm max-w-none text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: form.content }}
+                  />
+                ) : (
+                  <p className="text-gray-500 text-sm">(No content)</p>
+                )}
               </div>
               <div className="flex gap-2 flex-wrap pt-2">
                 {form.tags
@@ -466,17 +474,12 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
               <div>
                 <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
                   Content
-                  <span className="ml-2 text-gray-400 font-normal normal-case">
-                    {form.content.length} chars
-                  </span>
                 </label>
-                <textarea
-                  name="content"
+                <RichTextEditor
                   value={form.content}
-                  onChange={handleChange}
-                  placeholder="Write the full article content here. Use blank lines to separate paragraphs."
-                  rows={12}
-                  className={`${inputClass} font-mono text-sm leading-relaxed`}
+                  onChange={(html) =>
+                    setForm((prev) => ({ ...prev, content: html }))
+                  }
                 />
               </div>
 
