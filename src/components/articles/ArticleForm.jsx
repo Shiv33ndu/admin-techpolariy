@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Eye, EyeOff, X, ImageIcon, Upload, Loader2 } from "lucide-react";
 import { articleApi } from "../../api/articles.api";
 import { categoryApi } from "../../api/categories.api";
@@ -7,6 +7,7 @@ import useAuthStore from "../../store/authStore";
 import useToastStore from "../../store/toastStore";
 import { uploadImageToCloudinary } from "../../lib/cloudinary";
 import RichTextEditor from "./RichTextEditor";
+import ImageCropModal from "./ImageCropModal";
 
 const initialForm = {
   title: "",
@@ -37,6 +38,8 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
   const [preview, setPreview] = useState(false);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [cropSrc, setCropSrc] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
@@ -106,19 +109,30 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
     });
   };
 
-  const handleImageUpload = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    setCropSrc(objectUrl);
+    e.target.value = "";
+  };
 
+  const handleCropCancel = () => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+  };
+
+  const handleCropConfirm = async (blob) => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
     try {
       setUploading(true);
-      const url = await uploadImageToCloudinary(file);
+      const url = await uploadImageToCloudinary(blob);
       setForm((prev) => ({ ...prev, image_url: url }));
     } catch (err) {
       addToast(err.message || "Image upload failed", "error");
     } finally {
       setUploading(false);
-      e.target.value = "";
     }
   };
 
@@ -191,6 +205,13 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex">
+      {cropSrc && (
+        <ImageCropModal
+          imageSrc={cropSrc}
+          onCancel={handleCropCancel}
+          onConfirm={handleCropConfirm}
+        />
+      )}
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50"
@@ -424,9 +445,10 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                         <Upload size={16} />
                       )}
                       <input
+                        ref={fileInputRef}
                         type="file"
                         accept="image/*"
-                        onChange={handleImageUpload}
+                        onChange={handleFileSelect}
                         disabled={uploading}
                         className="hidden"
                       />

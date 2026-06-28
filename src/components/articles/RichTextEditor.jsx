@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { uploadImageToCloudinary } from "../../lib/cloudinary";
+import ImageCropModal from "./ImageCropModal";
 
 const ToolbarButton = ({ onClick, active, disabled, title, children }) => (
   <button
@@ -39,6 +40,7 @@ const ToolbarButton = ({ onClick, active, disabled, title, children }) => (
 
 export default function RichTextEditor({ value, onChange }) {
   const [uploading, setUploading] = useState(false);
+  const [cropSrc, setCropSrc] = useState(null);
   const fileInputRef = useRef(null);
 
   const editor = useEditor({
@@ -58,23 +60,34 @@ export default function RichTextEditor({ value, onChange }) {
     },
   });
 
-  const handleImageFile = useCallback(
-    async (e) => {
-      const file = e.target.files?.[0];
-      if (!file || !editor) return;
+  const handleFileSelect = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCropSrc(URL.createObjectURL(file));
+    e.target.value = "";
+  }, []);
 
+  const handleCropCancel = useCallback(() => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+  }, [cropSrc]);
+
+  const handleCropConfirm = useCallback(
+    async (blob) => {
+      if (cropSrc) URL.revokeObjectURL(cropSrc);
+      setCropSrc(null);
+      if (!editor) return;
       try {
         setUploading(true);
-        const url = await uploadImageToCloudinary(file);
+        const url = await uploadImageToCloudinary(blob);
         editor.chain().focus().setImage({ src: url }).run();
       } catch (err) {
         console.error("Image upload failed", err);
       } finally {
         setUploading(false);
-        e.target.value = "";
       }
     },
-    [editor]
+    [editor, cropSrc]
   );
 
   const setLink = useCallback(() => {
@@ -93,6 +106,13 @@ export default function RichTextEditor({ value, onChange }) {
 
   return (
     <div className="border border-gray-200 rounded-xl bg-gray-50 overflow-hidden">
+      {cropSrc && (
+        <ImageCropModal
+          imageSrc={cropSrc}
+          onCancel={handleCropCancel}
+          onConfirm={handleCropConfirm}
+        />
+      )}
       {/* Toolbar */}
       <div className="flex items-center gap-1 px-2 py-1.5 border-b border-gray-200 bg-white flex-wrap">
         <ToolbarButton
@@ -174,7 +194,7 @@ export default function RichTextEditor({ value, onChange }) {
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          onChange={handleImageFile}
+          onChange={handleFileSelect}
           className="hidden"
         />
 
