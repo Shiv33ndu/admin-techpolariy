@@ -12,6 +12,7 @@ const initialForm = {
   title: "",
   slug: "",
   description: "",
+  summary: "",
   content: "",
   domain_slug: "",
   section_slug: "",
@@ -55,6 +56,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
         title: article.title || "",
         slug: article.slug || "",
         description: article.description || "",
+        summary: article.summary || "",
         content: article.content || "",
         domain_slug: article.domain_slug || "",
         section_slug: "",
@@ -148,6 +150,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
         title: form.title.trim(),
         slug: form.slug.trim(),
         description: form.description.trim(),
+        summary: form.summary.trim(),
         content: form.content.trim(),
         domain_slug: form.domain_slug,
         status: form.status,
@@ -254,6 +257,12 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
               <p className="text-gray-600">
                 {form.description || "(No description)"}
               </p>
+              {form.summary && (
+                <div className="bg-white border border-gray-200 rounded-xl px-4 py-3">
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">TL;DR</p>
+                  <p className="text-gray-700 text-sm">{form.summary}</p>
+                </div>
+              )}
               <div className="border-t border-gray-200 pt-4">
                 {form.content ? (
                   <div
@@ -464,8 +473,23 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  placeholder="Short summary shown on article cards…"
+                  placeholder="Short text shown on article cards…"
                   rows={3}
+                  className={inputClass}
+                />
+              </div>
+
+              {/* Summary */}
+              <div>
+                <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Summary
+                </label>
+                <textarea
+                  name="summary"
+                  value={form.summary}
+                  onChange={handleChange}
+                  placeholder="Longer TL;DR shown on the article page…"
+                  rows={5}
                   className={inputClass}
                 />
               </div>
