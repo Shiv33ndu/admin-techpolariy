@@ -5,7 +5,6 @@ import {
   Tag,
   LayoutGrid,
   LogOut,
-  Zap,
 } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 
@@ -24,8 +23,8 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-6 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#FF0000] rounded-xl flex items-center justify-center flex-shrink-0">
-            <Zap size={17} className="text-white" />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <img src="/icontechpolarity.png" alt="TechPolarity" className="w-full h-full object-contain" />
           </div>
           <div>
             <p className="text-white font-bold text-[15px] leading-tight">
