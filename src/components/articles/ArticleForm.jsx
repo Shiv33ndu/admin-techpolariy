@@ -139,8 +139,8 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
   const handleSubmit = async () => {
     setError("");
 
-    if (!form.title.trim() || !form.slug.trim() || !form.domain_slug) {
-      setError("Title, slug, and category are required.");
+    if (!form.title.trim() || !form.slug.trim()) {
+      setError("Title and slug are required.");
       return;
     }
     if (!form.image_url.trim()) {
@@ -345,7 +345,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Sub-Category *
+                    Sub-Category
                   </label>
                   <select
                     name="domain_slug"
@@ -353,8 +353,8 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                     onChange={handleChange}
                     className={inputClass}
                   >
-                    <option value="" disabled>
-                      Select a sub-category
+                    <option value="">
+                      Select a sub-category (optional)
                     </option>
                     {categories.map((c) => (
                       <option key={c.slug} value={c.slug}>
