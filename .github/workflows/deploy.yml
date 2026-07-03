@@ -39,8 +39,6 @@ jobs:
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
-            cd ${{ secrets.DROPLET_APP_PATH }}
-            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u shiv33ndu --password-stdin
             docker pull ghcr.io/shiv33ndu/admin-techpolariy:latest
             docker stop tech-polarity-admin || true
             docker rm tech-polarity-admin || true
