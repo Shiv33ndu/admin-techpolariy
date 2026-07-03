@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Eye, EyeOff, X, ImageIcon, Upload, Loader2 } from "lucide-react";
 import { articleApi } from "../../api/articles.api";
 import { categoryApi } from "../../api/categories.api";
@@ -7,11 +7,13 @@ import useAuthStore from "../../store/authStore";
 import useToastStore from "../../store/toastStore";
 import { uploadImageToCloudinary } from "../../lib/cloudinary";
 import RichTextEditor from "./RichTextEditor";
+import ImageCropModal from "./ImageCropModal";
 
 const initialForm = {
   title: "",
   slug: "",
   description: "",
+  summary: "",
   content: "",
   domain_slug: "",
   section_slug: "",
@@ -36,6 +38,8 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
   const [preview, setPreview] = useState(false);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [cropSrc, setCropSrc] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
@@ -55,6 +59,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
         title: article.title || "",
         slug: article.slug || "",
         description: article.description || "",
+        summary: article.summary || "",
         content: article.content || "",
         domain_slug: article.domain_slug || "",
         section_slug: "",
@@ -104,27 +109,38 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
     });
   };
 
-  const handleImageUpload = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    setCropSrc(objectUrl);
+    e.target.value = "";
+  };
 
+  const handleCropCancel = () => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+  };
+
+  const handleCropConfirm = async (blob) => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
     try {
       setUploading(true);
-      const url = await uploadImageToCloudinary(file);
+      const url = await uploadImageToCloudinary(blob);
       setForm((prev) => ({ ...prev, image_url: url }));
     } catch (err) {
       addToast(err.message || "Image upload failed", "error");
     } finally {
       setUploading(false);
-      e.target.value = "";
     }
   };
 
   const handleSubmit = async () => {
     setError("");
 
-    if (!form.title.trim() || !form.slug.trim() || !form.domain_slug) {
-      setError("Title, slug, and category are required.");
+    if (!form.title.trim() || !form.slug.trim()) {
+      setError("Title and slug are required.");
       return;
     }
     if (!form.image_url.trim()) {
@@ -148,6 +164,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
         title: form.title.trim(),
         slug: form.slug.trim(),
         description: form.description.trim(),
+        summary: form.summary.trim(),
         content: form.content.trim(),
         domain_slug: form.domain_slug,
         status: form.status,
@@ -188,6 +205,13 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex">
+      {cropSrc && (
+        <ImageCropModal
+          imageSrc={cropSrc}
+          onCancel={handleCropCancel}
+          onConfirm={handleCropConfirm}
+        />
+      )}
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50"
@@ -254,6 +278,12 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
               <p className="text-gray-600">
                 {form.description || "(No description)"}
               </p>
+              {form.summary && (
+                <div className="bg-white border border-gray-200 rounded-xl px-4 py-3">
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">TL;DR</p>
+                  <p className="text-gray-700 text-sm">{form.summary}</p>
+                </div>
+              )}
               <div className="border-t border-gray-200 pt-4">
                 {form.content ? (
                   <div
@@ -315,7 +345,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Sub-Category *
+                    Sub-Category
                   </label>
                   <select
                     name="domain_slug"
@@ -323,8 +353,8 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                     onChange={handleChange}
                     className={inputClass}
                   >
-                    <option value="" disabled>
-                      Select a sub-category
+                    <option value="">
+                      Select a sub-category (optional)
                     </option>
                     {categories.map((c) => (
                       <option key={c.slug} value={c.slug}>
@@ -415,9 +445,10 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                         <Upload size={16} />
                       )}
                       <input
+                        ref={fileInputRef}
                         type="file"
                         accept="image/*"
-                        onChange={handleImageUpload}
+                        onChange={handleFileSelect}
                         disabled={uploading}
                         className="hidden"
                       />
@@ -464,8 +495,23 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  placeholder="Short summary shown on article cards…"
+                  placeholder="Short text shown on article cards…"
                   rows={3}
+                  className={inputClass}
+                />
+              </div>
+
+              {/* Summary */}
+              <div>
+                <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Summary
+                </label>
+                <textarea
+                  name="summary"
+                  value={form.summary}
+                  onChange={handleChange}
+                  placeholder="Longer TL;DR shown on the article page…"
+                  rows={5}
                   className={inputClass}
                 />
               </div>
