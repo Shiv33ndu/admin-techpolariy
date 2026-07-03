@@ -1,0 +1,51 @@
+name: Deploy Admin to Droplet
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/shiv33ndu/admin-techpolariy:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Droplet via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            cd ${{ secrets.DROPLET_APP_PATH }}
+            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u shiv33ndu --password-stdin
+            docker pull ghcr.io/shiv33ndu/admin-techpolariy:latest
+            docker stop tech-polarity-admin || true
+            docker rm tech-polarity-admin || true
+            docker run -d \
+              --name tech-polarity-admin \
+              --restart unless-stopped \
+              --network host \
+              ghcr.io/shiv33ndu/admin-techpolariy:latest
