@@ -1,6 +1,6 @@
 const BASE =
   import.meta.env.VITE_API_BASE ||
-  "https://tech-polarity-backend.onrender.com";
+  "https://api.techpolarity.com";
 
 export async function loginAdmin(
   email,
