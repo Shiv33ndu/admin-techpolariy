@@ -3,6 +3,8 @@ import {
   ShieldCheck,
   Newspaper,
   TrendingUp,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 import useAuthStore from "../store/authStore";
@@ -24,6 +26,9 @@ export default function LoginPage() {
 
   const [error, setError] =
     useState("");
+
+  const [showPassword, setShowPassword] =
+    useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -180,30 +185,67 @@ export default function LoginPage() {
                   Password
                 </label>
 
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) =>
-                    setPassword(
-                      e.target.value
-                    )
-                  }
-                  required
-                  className="
-                    w-full
-                    bg-gray-50
-                    border
-                    border-gray-200
-                    px-5
-                    py-4
-                    rounded-2xl
-                    outline-none
-                    focus:ring-4
-                    focus:ring-red-100
-                    focus:border-red-500
-                  "
-                />
+                <div className="relative">
+                  <input
+                    type={
+                      showPassword
+                        ? "text"
+                        : "password"
+                    }
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) =>
+                      setPassword(
+                        e.target.value
+                      )
+                    }
+                    required
+                    className="
+                      w-full
+                      bg-gray-50
+                      border
+                      border-gray-200
+                      px-5
+                      py-4
+                      pr-12
+                      rounded-2xl
+                      outline-none
+                      focus:ring-4
+                      focus:ring-red-100
+                      focus:border-red-500
+                    "
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword(
+                        (prev) => !prev
+                      )
+                    }
+                    tabIndex={-1}
+                    aria-label={
+                      showPassword
+                        ? "Hide password"
+                        : "Show password"
+                    }
+                    className="
+                      absolute
+                      right-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-400
+                      hover:text-gray-600
+                      transition-colors
+                    "
+                  >
+                    {showPassword ? (
+                      <EyeOff size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <button
@@ -222,11 +264,26 @@ export default function LoginPage() {
                   hover:scale-[1.02]
                   transition-all
                   duration-300
+                  disabled:opacity-90
+                  disabled:hover:scale-100
+                  disabled:cursor-not-allowed
+                  flex
+                  items-center
+                  justify-center
                 "
               >
-                {loading
-                  ? "Authenticating..."
-                  : "Login to Dashboard"}
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 bg-white rounded-full animate-bounce [animation-delay:-0.3s]" />
+                      <span className="w-2.5 h-2.5 bg-white rounded-full animate-bounce [animation-delay:-0.15s]" />
+                      <span className="w-2.5 h-2.5 bg-white rounded-full animate-bounce" />
+                    </span>
+                    Authenticating
+                  </span>
+                ) : (
+                  "Login to Dashboard"
+                )}
               </button>
 
             </form>
