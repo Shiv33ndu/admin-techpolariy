@@ -183,9 +183,6 @@ export default function DashboardPage() {
                     <p className="text-sm font-medium text-gray-900 truncate">
                       {article.title}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {article.domain_slug}
-                    </p>
                   </div>
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0 ${

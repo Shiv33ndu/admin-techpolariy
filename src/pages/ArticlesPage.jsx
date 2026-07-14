@@ -293,9 +293,6 @@ export default function ArticlesPage() {
                         <p className="text-sm font-semibold text-gray-900 truncate max-w-[260px]">
                           {article.title}
                         </p>
-                        <p className="text-xs text-gray-400 font-mono mt-0.5 truncate max-w-[260px]">
-                          /{article.slug}
-                        </p>
                       </div>
                     </div>
                   </td>
@@ -303,7 +300,8 @@ export default function ArticlesPage() {
                   {/* Category */}
                   <td className="px-4 py-4 hidden md:table-cell">
                     <span className="text-sm text-gray-600 capitalize">
-                      {article.domain_slug}
+                      {categories.find((c) => c.slug === article.domain_slug)
+                        ?.name || article.domain_slug}
                     </span>
                   </td>
 

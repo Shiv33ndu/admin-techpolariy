@@ -80,7 +80,7 @@ export default function SectionsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim() || !form.slug.trim()) {
-      setError("Name and slug are required.");
+      setError("Name is required.");
       return;
     }
     try {
@@ -207,28 +207,6 @@ export default function SectionsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-                  Slug
-                </label>
-                <input
-                  name="slug"
-                  value={form.slug}
-                  onChange={handleChange}
-                  placeholder="e.g. tech"
-                  className={`${inputClass} font-mono ${
-                    editing ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  required
-                  disabled={!!editing}
-                />
-                {editing && (
-                  <p className="text-xs text-gray-400 mt-1">
-                    Slug cannot be changed after creation.
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
                   Display Order
                 </label>
                 <input
@@ -295,9 +273,6 @@ export default function SectionsPage() {
                 <th className="px-6 py-3.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-4 py-3.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden sm:table-cell">
-                  Slug
-                </th>
                 <th className="px-4 py-3.5 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
                   Order
                 </th>
@@ -317,11 +292,6 @@ export default function SectionsPage() {
                 >
                   <td className="px-6 py-4 font-semibold text-sm text-gray-900">
                     {section.name}
-                  </td>
-                  <td className="px-4 py-4 hidden sm:table-cell">
-                    <code className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg">
-                      {section.slug}
-                    </code>
                   </td>
                   <td className="px-4 py-4 text-center text-sm text-gray-500 hidden md:table-cell">
                     {section.order ?? 0}
