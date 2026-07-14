@@ -126,7 +126,7 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
     setError("");
 
     if (!form.title.trim() || !form.slug.trim() || !form.domain_slug) {
-      setError("Title, slug, and category are required.");
+      setError("Title and category are required.");
       return;
     }
     if (!form.image_url.trim()) {
@@ -241,9 +241,6 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
               <h1 className="text-2xl font-bold text-gray-900">
                 {form.title || "(No title)"}
               </h1>
-              <p className="text-xs font-mono text-gray-400">
-                /article/{form.slug || "slug"}
-              </p>
               {form.image_url && (
                 <img
                   src={form.image_url}
@@ -289,35 +286,18 @@ export default function ArticleForm({ open, setOpen, refetch, article }) {
             </div>
           ) : (
             <div className="space-y-5">
-              {/* Title + Slug */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Title *
-                  </label>
-                  <input
-                    name="title"
-                    value={form.title}
-                    onChange={handleChange}
-                    placeholder="Article title"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Slug *
-                  </label>
-                  <input
-                    name="slug"
-                    value={form.slug}
-                    onChange={handleChange}
-                    disabled={!!article}
-                    placeholder="article-slug"
-                    className={`${inputClass} font-mono ${
-                      article ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  />
-                </div>
+              {/* Title */}
+              <div>
+                <label className="block mb-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Title *
+                </label>
+                <input
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  placeholder="Article title"
+                  className={inputClass}
+                />
               </div>
 
               {/* Sub-Category + Status */}
